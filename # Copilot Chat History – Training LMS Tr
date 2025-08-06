@@ -1,0 +1,30 @@
+# Copilot Chat History – Training LMS Tracker Deployment
+
+## Deployment & Hosting Options
+
+- **Render.com, Railway.app, Fly.io**: Free, Docker support, easy for demos.
+- **Cloudflare Tunnel**: Expose your server securely without revealing your real domain.
+
+## Cloudflare Tunnel Setup
+
+1. **Install cloudflared** on your server.
+2. **Authenticate**: `cloudflared tunnel login`
+3. **Create tunnel**: `cloudflared tunnel create training-lms`
+4. **Configure**: Edit `~/.cloudflared/config.yml` to set hostname and service.
+5. **DNS**: Add CNAME in Cloudflare dashboard if using a custom domain.
+6. **Run tunnel**: `cloudflared tunnel run training-lms`
+7. **Default domain**: If not using a custom domain, Cloudflare assigns a random `trycloudflare.com` URL.
+
+## Docker + Nginx Setup
+
+- **Production**: Use Nginx inside Docker as a reverse proxy for Flask and React, all on port 6002.
+- **Local Development**: Keep using Flask and React dev servers for hot reloading and fast feedback.
+- **Testing Production Locally**: Use Docker Compose to spin up all services, including Nginx (no hot reloading).
+
+## Saving This Chat
+
+- Copy this markdown file into your new workspace for future reference.
+
+---
+
+*Let me know if you need sample Docker Compose and Nginx configs, or further deployment help!*

@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=training_lms
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    ports:
+      - "6001:6001"
+    environment:
+      - FLASK_ENV=development
+      - PORT=6001
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/training_lms
+    volumes:
+      - ./backend:/app
+      - ./Original Docs data and example:/data
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "6002:6002"
+    environment:
+      - REACT_APP_API_BASE=http://localhost:6001/api
+  # volumes:
+  #   - ./frontend:/app
+  #   - /app/node_modules
+    depends_on:
+      - backend
+    stdin_open: true
+    tty: true
+
+volumes:
+  postgres_data:
