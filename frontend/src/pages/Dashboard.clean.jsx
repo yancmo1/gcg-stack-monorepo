@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:6001/api';
+const API_BASE = import.meta.env.VITE_REACT_APP_API_BASE || 'http://localhost:6001/api';
 
 export default function Dashboard() {
   console.log('Rendering Dashboard component');

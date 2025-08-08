@@ -6,16 +6,17 @@ import { Menu, Bell, Search, PlusCircle } from 'lucide-react';
 
 function Sidebar({ collapsed, setCollapsed }) {
   const nav = [
-  { to: '/', label: 'Dashboard' },
-  { to: '/learners', label: 'Learners' },
+    { to: '/', label: 'Dashboard' },
+    { to: '/learners', label: 'Learners' },
+    { to: '/testing', label: 'Testing' },
     { to: '/analytics', label: 'Analytics' },
-  // { to: '/', label: 'Records' }, // Remove or comment out Records if not needed
+    // { to: '/', label: 'Records' }, // Remove or comment out Records if not needed
     { to: '/courses', label: 'Courses' },
     { to: '/assignments', label: 'Assignments' },
     { to: '/settings', label: 'Settings' }
   ];
   return (
-    <aside className={`h-full border-r border-slate-200 bg-white ${collapsed ? 'w-16' : 'w-64'} transition-all`}> 
+  <aside className={`h-full border-r border-slate-200 bg-white ${collapsed ? 'w-16' : 'w-64'} transition-all`} style={{ borderTopLeftRadius: 20, borderBottomLeftRadius: 20 }}>
       <div className="flex items-center justify-between p-4">
         <span className="font-semibold">{collapsed ? 'LMS' : 'Training LMS'}</span>
         <button className="btn btn-ghost p-2" onClick={() => setCollapsed(!collapsed)} aria-label="Toggle sidebar">
@@ -133,12 +134,26 @@ export default function AppShell() {
 
   return (
     <ModalContext.Provider value={{ openModal, closeModal, isModalOpen, modalMode, search, setSearch: setRawSearch }}>
-      <div className="h-screen grid" style={{ gridTemplateColumns: collapsed ? '64px 1fr' : '256px 1fr', gridTemplateRows: 'auto 1fr' }}>
+      <div
+        className="grid"
+        style={{
+          gridTemplateColumns: collapsed ? '64px 1fr' : '256px 1fr',
+          gridTemplateRows: 'auto 1fr',
+          background: 'transparent',
+          border: '8px solid #082f83ff',
+          borderRadius: 32,
+          boxShadow: '0 4px 24px rgba(37,99,235,0.08)',
+          maxWidth: 1200,
+          maxHeight: 900,
+          margin: '32px auto',
+          minHeight: 600,
+        }}
+      >
         <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
         <div className="flex min-w-0 flex-col">
           <Topbar search={rawSearch} setSearch={setRawSearch} />
           <main className="min-w-0 flex-1 bg-slate-50 p-4">
-            <div className="mx-auto max-w-7xl">
+            <div className="mx-auto max-w-7xl" style={{ padding: '32px 24px', minHeight: 'calc(100vh - 120px)', marginTop: 8, marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 24 }}>
               <Outlet />
             </div>
           </main>
@@ -146,7 +161,7 @@ export default function AppShell() {
           {isModalOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
               <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
-                <RecordForm onAdd={closeModal} />
+                <RecordForm onAdd={closeModal} onCancel={closeModal} />
               </div>
             </div>
           )}

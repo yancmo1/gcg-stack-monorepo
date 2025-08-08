@@ -11,7 +11,7 @@ def _norm_name(s: str) -> str:
     return re.sub(r'\s+', ' ', (s or '').strip()).lower()
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": ["http://localhost:6002", "http://100.70.125.100:6002"]}}, supports_credentials=True, methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 # Config
 PORT = int(os.getenv('PORT', '6001'))
@@ -62,6 +62,13 @@ def init_db():
     cur.execute('CREATE INDEX IF NOT EXISTS idx_records_employee_name ON records(employee_name)')
     cur.execute('CREATE INDEX IF NOT EXISTS idx_tests_record_id ON tests(record_id)')
     cur.execute('CREATE INDEX IF NOT EXISTS idx_tests_type_date ON tests(test_type, test_date)')
+
+    # Ensure 'group' column exists on records for Learner/Testing separation
+    try:
+        cur.execute('ALTER TABLE records ADD COLUMN "group" TEXT DEFAULT "Learner"')
+    except Exception:
+        # Column already exists or SQLite limitation encountered; ignore
+        pass
 
     conn.commit()
     conn.close()
@@ -341,8 +348,16 @@ def add_record():
     try:
         conn = get_db()
         cur = conn.cursor()
-        cur.execute('''INSERT INTO records (employee_name, title, region, start_date, completion_date, status, sort_order, notes, trainer, mtl_completed, new_hire_test_score) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                    (data.get('employee_name'), data.get('title'), data.get('region'), data.get('start_date'), data.get('completion_date'), data.get('status'), data.get('sort_order'), data.get('notes'), data.get('trainer'), data.get('mtl_completed'), data.get('new_hire_test_score')))
+        cur.execute(
+            '''INSERT INTO records (employee_name, title, region, start_date, completion_date, status, sort_order, notes, trainer, mtl_completed, new_hire_test_score, "group")
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+            (
+                data.get('employee_name'), data.get('title'), data.get('region'),
+                data.get('start_date'), data.get('completion_date'), data.get('status'),
+                data.get('sort_order'), data.get('notes'), data.get('trainer'),
+                data.get('mtl_completed'), data.get('new_hire_test_score'), data.get('group') or 'Learner'
+            )
+        )
         conn.commit()
         new_id = cur.lastrowid
         conn.close()
@@ -363,17 +378,89 @@ def update_record(record_id):
         if not record:
             conn.close()
             return jsonify({'error': 'Record not found'}), 404
+        # Update record
         cur.execute('''UPDATE records SET 
                        employee_name=?, title=?, region=?, start_date=?, completion_date=?, 
-                       status=?, sort_order=?, notes=?, trainer=?, mtl_completed=?, new_hire_test_score=?
+                       status=?, sort_order=?, notes=?, trainer=?, mtl_completed=?, new_hire_test_score=?, "group"=?
                        WHERE id=?''',
                     (data.get('employee_name'), data.get('title'), data.get('region'), 
                      data.get('start_date'), data.get('completion_date'), data.get('status'), 
                      data.get('sort_order'), data.get('notes'), data.get('trainer'), 
-                     data.get('mtl_completed'), data.get('new_hire_test_score'), record_id))
+                     data.get('mtl_completed'), data.get('new_hire_test_score'), data.get('group') or 'Learner', record_id))
         conn.commit()
         conn.close()
         return jsonify({'message': 'Record updated successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# --- Learners endpoints (alias to records for dev) ---
+@api.route('/learners', methods=['GET'])
+def learners_list():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM records ORDER BY id DESC')
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    # Map records fields to learners
+    for r in rows:
+        r['group'] = r.get('group') or 'Learner'
+    return jsonify(rows)
+
+@api.route('/learners', methods=['POST'])
+def learners_add():
+    data = request.json or {}
+    # Reuse add_record logic
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute('''INSERT INTO records (employee_name, title, region, start_date, completion_date, status, sort_order, notes, trainer, mtl_completed, new_hire_test_score, "group")
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                    (data.get('employee_name'), data.get('title'), data.get('region'), data.get('start_date'), data.get('completion_date'), data.get('status') or 'In Progress', data.get('sort_order'), data.get('notes'), data.get('trainer'), data.get('mtl_completed'), data.get('new_hire_test_score'), data.get('group') or 'Learner'))
+        conn.commit()
+        new_id = cur.lastrowid
+        conn.close()
+        return jsonify({'message': 'Learner added', 'id': new_id}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@api.route('/learners/<int:learner_id>', methods=['PUT'])
+def learners_update(learner_id):
+    data = request.json or {}
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM records WHERE id = ?', (learner_id,))
+        rec = cur.fetchone()
+        if not rec:
+            conn.close()
+            return jsonify({'error': 'Learner not found'}), 404
+        cur.execute('''UPDATE records SET 
+                       employee_name=?, title=?, region=?, start_date=?, completion_date=?, 
+                       status=?, sort_order=?, notes=?, trainer=?, mtl_completed=?, new_hire_test_score=?, "group"=?
+                       WHERE id=?''',
+                    (data.get('employee_name'), data.get('title'), data.get('region'), 
+                     data.get('start_date'), data.get('completion_date'), data.get('status'), 
+                     data.get('sort_order'), data.get('notes'), data.get('trainer'), 
+                     data.get('mtl_completed'), data.get('new_hire_test_score'), data.get('group') or 'Learner', learner_id))
+        conn.commit()
+        conn.close()
+        return jsonify({'message': 'Learner updated successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@api.route('/learners/<int:learner_id>', methods=['DELETE'])
+def learners_delete(learner_id):
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute('SELECT id FROM records WHERE id = ?', (learner_id,))
+        if not cur.fetchone():
+            conn.close()
+            return jsonify({'error': 'Learner not found'}), 404
+        cur.execute('DELETE FROM records WHERE id = ?', (learner_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({'message': 'Learner deleted successfully'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

@@ -64,7 +64,8 @@ def get_learners():
                 'notes': learner.notes,
                 'trainer': learner.trainer,
                 'mtl_completed': learner.mtl_completed,
-                'new_hire_test_score': learner.new_hire_test_score
+                'new_hire_test_score': learner.new_hire_test_score,
+                'group': learner.group
             })
         return jsonify(result)
     finally:
@@ -103,7 +104,8 @@ def add_learner():
             notes=data.get('notes', ''),
             trainer=data.get('trainer', ''),
             mtl_completed=data.get('mtl_completed', ''),
-            new_hire_test_score=data.get('new_hire_test_score')
+            new_hire_test_score=data.get('new_hire_test_score'),
+            group=data.get('group', 'Learner')
         )
         db.add(learner)
         db.commit()
@@ -156,6 +158,8 @@ def update_learner(learner_id):
             learner.mtl_completed = data['mtl_completed']
         if 'new_hire_test_score' in data:
             learner.new_hire_test_score = data['new_hire_test_score']
+        if 'group' in data:
+            learner.group = data['group']
         
         db.commit()
         return jsonify({'message': 'Learner updated successfully'}), 200

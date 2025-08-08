@@ -17,3 +17,4 @@ class Learner(Base):
     trainer = Column(String)
     mtl_completed = Column(String)
     new_hire_test_score = Column(Float)
+    group = Column(String, default='Learner')  # New field: 'Learner' or 'Testing'

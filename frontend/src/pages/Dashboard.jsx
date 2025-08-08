@@ -21,7 +21,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     // Fetch learners from backend API
-    fetch("/api/learners")
+  fetch("/api/records")
       .then((res) => res.json())
       .then((data) => {
         // Sort by most recent (assuming start_date or completion_date)

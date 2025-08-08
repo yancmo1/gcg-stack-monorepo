@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { ModalContext } from '../components/layout/AppShell';
 
-const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:6001/api';
+const API_BASE = import.meta.env.VITE_REACT_APP_API_BASE || 'http://localhost:6001/api';
 
 
 export default function LearnersPage() {
@@ -32,14 +32,19 @@ export default function LearnersPage() {
   const fetchLearners = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/learners`);
+      const response = await fetch(`${API_BASE}/records`);
       if (!response.ok) {
-        throw new Error('Failed to fetch learners');
+        let msg = 'Failed to fetch learners';
+        if (response.status === 0) {
+          msg = 'Network error or CORS issue. Please check backend CORS settings.';
+        }
+        throw new Error(msg);
       }
       const data = await response.json();
       setLearners(data);
     } catch (err) {
       setError(err.message);
+      alert('Error fetching learners: ' + err.message);
       console.error('Error fetching learners:', err);
     } finally {
       setLoading(false);
@@ -54,12 +59,18 @@ export default function LearnersPage() {
     }
     try {
       setSaving(true);
-      const response = await fetch(`${API_BASE}/learners`, {
+      const response = await fetch(`${API_BASE}/records`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newLearner)
       });
-      if (!response.ok) throw new Error('Failed to add learner');
+      if (!response.ok) {
+        let msg = 'Failed to add learner';
+        if (response.status === 0) {
+          msg = 'Network error or CORS issue. Please check backend CORS settings.';
+        }
+        throw new Error(msg);
+      }
       setNewLearner({
         employee_name: '',
         title: '',
@@ -73,8 +84,8 @@ export default function LearnersPage() {
       await fetchLearners(); // Force refresh
       alert('Learner added successfully!');
     } catch (err) {
-      console.error('Error adding learner:', err);
       alert('Failed to add learner: ' + err.message);
+      console.error('Error adding learner:', err);
     } finally {
       setSaving(false);
     }
@@ -143,7 +154,7 @@ export default function LearnersPage() {
       </div>
 
       {/* Learners Table */}
-      <div style={{background: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', overflow: 'hidden'}}>
+      <div style={{background: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', overflow: 'hidden', maxHeight: 600, overflowY: 'auto'}}>
         <div style={{overflowX: 'auto'}}>
           <table style={{width: '100%', borderCollapse: 'collapse'}}>
             <thead style={{backgroundColor: '#f9fafb'}}>
@@ -318,12 +329,26 @@ export default function LearnersPage() {
                     <select
                       value={editLearner.status || ''}
                       onChange={e => setEditLearner({...editLearner, status: e.target.value})}
-                      style={{width: '100%', padding: '0.75rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.875rem', background: 'rgba(0,0,0,0.10)'}}
-                    >
+                      style={{width: '100%', padding: '0.75rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.875rem', background: 'rgba(0,0,0,0.10)'}}>
                       <option value="Pending">Pending</option>
                       <option value="In Progress">In Progress</option>
                       <option value="Completed">Completed</option>
+                      <option value="Testing">Testing</option>
                     </select>
+                    {/* Retest checkbox only for Testing status */}
+                    {(editLearner.status === 'Testing' || editLearner.status === 'Retest') && (
+                      <div style={{marginTop: '0.5rem'}}>
+                        <label style={{fontSize: '0.875rem', fontWeight: '500', color: '#374151'}}>
+                          <input
+                            type="checkbox"
+                            checked={editLearner.status === 'Retest'}
+                            onChange={e => setEditLearner({ ...editLearner, status: e.target.checked ? 'Retest' : 'Testing' })}
+                            style={{marginRight: '0.5rem'}}
+                          />
+                          Retest
+                        </label>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label style={{display: 'block', marginBottom: '0.25rem', fontSize: '0.875rem', fontWeight: '500', color: '#374151'}}>Test Score (%)</label>

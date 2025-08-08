@@ -21,6 +21,25 @@ export async function apiPost(path, body) {
   return res.json()
 }
 
+export async function apiPut(path, body) {
+  const res = await fetch(`${apiBase}${path}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) throw new Error(`PUT ${path} failed: ${res.status}`)
+  return res.json()
+}
+
+export async function apiDelete(path) {
+  const res = await fetch(`${apiBase}${path}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.status}`)
+  return res.json()
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />

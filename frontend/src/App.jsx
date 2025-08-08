@@ -9,7 +9,7 @@ import SettingsPage from './pages/SettingsPage';
 import RecordList from './components/RecordList';
 import RecordDetails from './components/RecordDetails';
 import HealthPage from './pages/HealthPage';
-import TestersPage from './pages/TestersPage';
+import TestingPage from './pages/TestingPage';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -43,7 +43,7 @@ function App() {
           <Route path="/" element={<AppShell />}>
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="testers" element={<TestersPage />} />
+            <Route path="testing" element={<TestingPage />} />
             <Route path="courses" element={<CoursesPage />} />
             <Route path="learners" element={<LearnersPage />} />
             <Route path="assignments" element={<div style={{padding: '2rem'}}><h2>Assignments</h2><p>Coming soon...</p></div>} />

@@ -38,5 +38,13 @@ services:
     stdin_open: true
     tty: true
 
+  nginx:
+    build: ./nginx
+    ports:
+      - "6002:6002"
+    depends_on:
+      - backend
+      - frontend
+
 volumes:
   postgres_data:

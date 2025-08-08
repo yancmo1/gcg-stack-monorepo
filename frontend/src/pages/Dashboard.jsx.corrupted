@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
-const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:6001/api';
+import { apiBase, apiGet, apiPost, apiPut, apiDelete } from '../index.jsx';
 
 export default function Dashboard() {
   console.log('Rendering Dashboard component');
@@ -12,6 +11,7 @@ export default function Dashboard() {
   const [showEdit, setShowEdit] = useState(false);
   const [editLearner, setEditLearner] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [groupFilter, setGroupFilter] = useState('All');
   const [newLearner, setNewLearner] = useState({
     employee_name: '',
     title: '',
@@ -19,22 +19,20 @@ export default function Dashboard() {
     start_date: '',
     status: 'Pending',
     trainer: '',
-    notes: ''
+    notes: '',
+    group: 'Learner'
   });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [learnersRes, metricsRes] = await Promise.all([
-          fetch(`${API_BASE}/learners`),
-          fetch(`${API_BASE}/metrics/summary`)
+        const [learners, metrics] = await Promise.all([
+          apiGet('/learners'),
+          apiGet('/metrics/summary')
         ]);
-        if (!learnersRes.ok || !metricsRes.ok) {
-          throw new Error('Failed to fetch data');
-        }
-        setLearners(await learnersRes.json());
-        setMetrics(await metricsRes.json());
+        setLearners(learners);
+        setMetrics(metrics);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -45,7 +43,7 @@ export default function Dashboard() {
   }, []);
 
   const handleEdit = (learner) => {
-    setEditLearner(learner);
+    setEditLearner({ ...learner });
     setShowEdit(true);
   };
 
@@ -53,16 +51,12 @@ export default function Dashboard() {
     e.preventDefault();
     setSaving(true);
     try {
-      const response = await fetch(`${API_BASE}/learners/${editLearner.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editLearner)
-      });
-      if (!response.ok) throw new Error('Failed to update learner');
+      // Always send group field, default to 'Learner' if missing
+      const payload = { ...editLearner, group: editLearner.group || 'Learner' };
+      await apiPut(`/learners/${editLearner.id}`, payload);
       setShowEdit(false);
       setEditLearner(null);
-      const learnersRes = await fetch(`${API_BASE}/learners`);
-      if (learnersRes.ok) setLearners(await learnersRes.json());
+      setLearners(await apiGet('/learners'));
       alert('Learner updated successfully!');
     } catch (err) {
       alert('Failed to update learner: ' + err.message);
@@ -75,13 +69,11 @@ export default function Dashboard() {
     setSaving(true);
     try {
       if (!window.confirm(`Delete learner ${learner.employee_name}? This cannot be undone.`)) return;
-      const response = await fetch(`${API_BASE}/learners/${learner.id}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Failed to delete learner');
-      setShowEdit(false);
-      setEditLearner(null);
-      const learnersRes = await fetch(`${API_BASE}/learners`);
-      if (learnersRes.ok) setLearners(await learnersRes.json());
-      alert('Learner deleted successfully!');
+  await apiDelete(`/learners/${learner.id}`);
+  setShowEdit(false);
+  setEditLearner(null);
+  setLearners(await apiGet('/learners'));
+  alert('Learner deleted successfully!');
     } catch (err) {
       alert('Failed to delete learner: ' + err.message);
     } finally {
@@ -93,12 +85,7 @@ export default function Dashboard() {
     e.preventDefault();
     setSaving(true);
     try {
-      const response = await fetch(`${API_BASE}/learners`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newLearner)
-      });
-      if (!response.ok) throw new Error('Failed to add learner');
+      await apiPost('/learners', newLearner);
       setShowQuickAdd(false);
       setNewLearner({
         employee_name: '',
@@ -109,8 +96,7 @@ export default function Dashboard() {
         trainer: '',
         notes: ''
       });
-      const learnersRes = await fetch(`${API_BASE}/learners`);
-      if (learnersRes.ok) setLearners(await learnersRes.json());
+      setLearners(await apiGet('/learners'));
       alert('Learner added successfully!');
     } catch (err) {
       alert('Failed to add learner: ' + err.message);
@@ -176,6 +162,17 @@ export default function Dashboard() {
                         style={{width: '100%', padding: '0.75rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.875rem'}}
                         required
                       />
+                    </div>
+                    <div>
+                      <label style={{display: 'block', marginBottom: '0.25rem', fontSize: '0.875rem', fontWeight: '500', color: '#374151'}}>Group</label>
+                      <select
+                        value={editLearner.group || 'Learner'}
+                        onChange={e => setEditLearner({...editLearner, group: e.target.value})}
+                        style={{width: '100%', padding: '0.75rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.875rem'}}
+                      >
+                        <option value="Learner">Learner</option>
+                        <option value="Testing">Testing</option>
+                      </select>
                     </div>
                   </div>
                   <div style={{display: 'flex', gap: '0.75rem', justifyContent: 'flex-end'}}>
@@ -243,6 +240,17 @@ export default function Dashboard() {
                         required
                       />
                     </div>
+                    <div>
+                      <label style={{display: 'block', marginBottom: '0.25rem', fontSize: '0.875rem', fontWeight: '500', color: '#374151'}}>Group</label>
+                      <select
+                        value={newLearner.group}
+                        onChange={e => setNewLearner({...newLearner, group: e.target.value})}
+                        style={{width: '100%', padding: '0.75rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.875rem'}}
+                      >
+                        <option value="Learner">Learner</option>
+                        <option value="Testing">Testing</option>
+                      </select>
+                    </div>
                   </div>
                   <div style={{display: 'flex', gap: '0.75rem', justifyContent: 'flex-end'}}>
                     <button
@@ -262,6 +270,14 @@ export default function Dashboard() {
             </div>
           )}
 
+          <div style={{marginBottom: '1rem'}}>
+            <label style={{marginRight: '1rem', fontWeight: '500'}}>Filter by Group:</label>
+            <select value={groupFilter} onChange={e => setGroupFilter(e.target.value)} style={{padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db'}}>
+              <option value="All">All</option>
+              <option value="Learner">Learner</option>
+              <option value="Testing">Testing</option>
+            </select>
+          </div>
           <div style={{background: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', overflow: 'hidden'}}>
             <div style={{overflowX: 'auto'}}>
               <table style={{width: '100%', borderCollapse: 'collapse'}}>
@@ -271,32 +287,37 @@ export default function Dashboard() {
                     <th style={{padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb'}}>Title</th>
                     <th style={{padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb'}}>Region</th>
                     <th style={{padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb'}}>Status</th>
+                    <th style={{padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb'}}>Group</th>
                     <th style={{padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb'}}>Completion</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {learners.slice(0, 5).map((learner, index) => (
-                    <tr key={learner.id} style={{borderBottom: index < 4 ? '1px solid #e5e7eb' : 'none', cursor: 'pointer'}} onClick={() => handleEdit(learner)}>
-                      <td style={{padding: '0.75rem', fontSize: '0.875rem'}}>{learner.employee_name}</td>
-                      <td style={{padding: '0.75rem', fontSize: '0.875rem', color: '#6b7280'}}>{learner.title}</td>
-                      <td style={{padding: '0.75rem', fontSize: '0.875rem', color: '#6b7280'}}>{learner.region}</td>
-                      <td style={{padding: '0.75rem', fontSize: '0.875rem'}}>
-                        <span style={{
-                          backgroundColor: learner.status === 'Completed' ? '#dcfce7' : '#fef3c7',
-                          color: learner.status === 'Completed' ? '#15803d' : '#d97706',
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '9999px',
-                          fontSize: '0.75rem',
-                          fontWeight: '500'
-                        }}>
-                          {learner.status}
-                        </span>
-                      </td>
-                      <td style={{padding: '0.75rem', fontSize: '0.875rem', color: '#6b7280'}}>
-                        {learner.completion_date ? new Date(learner.completion_date).toLocaleDateString() : 'In Progress'}
-                      </td>
-                    </tr>
-                  ))}
+                  {learners
+                    .filter(l => groupFilter === 'All' || l.group === groupFilter)
+                    .slice(0, 5)
+                    .map((learner, index) => (
+                      <tr key={learner.id} style={{borderBottom: index < 4 ? '1px solid #e5e7eb' : 'none', cursor: 'pointer'}} onClick={() => handleEdit(learner)}>
+                        <td style={{padding: '0.75rem', fontSize: '0.875rem'}}>{learner.employee_name}</td>
+                        <td style={{padding: '0.75rem', fontSize: '0.875rem', color: '#6b7280'}}>{learner.title}</td>
+                        <td style={{padding: '0.75rem', fontSize: '0.875rem', color: '#6b7280'}}>{learner.region}</td>
+                        <td style={{padding: '0.75rem', fontSize: '0.875rem'}}>
+                          <span style={{
+                            backgroundColor: learner.status === 'Completed' ? '#dcfce7' : '#fef3c7',
+                            color: learner.status === 'Completed' ? '#15803d' : '#d97706',
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '9999px',
+                            fontSize: '0.75rem',
+                            fontWeight: '500'
+                          }}>
+                            {learner.status}
+                          </span>
+                        </td>
+                        <td style={{padding: '0.75rem', fontSize: '0.875rem', color: '#6b7280'}}>{learner.group || 'Learner'}</td>
+                        <td style={{padding: '0.75rem', fontSize: '0.875rem', color: '#6b7280'}}>
+                          {learner.completion_date ? new Date(learner.completion_date).toLocaleDateString() : 'In Progress'}
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
