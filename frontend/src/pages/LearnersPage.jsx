@@ -383,25 +383,31 @@ export default function LearnersPage() {
                   />
                 </div>
               </div>
-              <div style={{display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', alignItems: 'center'}}>
-                <button
-                  type="button"
-                  onClick={() => { setShowEdit(false); setEditLearner(null); }}
-                  disabled={saving}
-                  style={{padding: '0.75rem 1.5rem', border: '1px solid #d1d5db', borderRadius: '6px', backgroundColor: 'white', color: '#374151', fontSize: '0.875rem', fontWeight: '500', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1}}
-                >Cancel</button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  style={{padding: '0.75rem 1.5rem', border: 'none', borderRadius: '6px', backgroundColor: '#3b82f6', color: 'white', fontSize: '0.875rem', fontWeight: '500', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1}}
-                >{saving ? 'Saving...' : 'Save Changes'}</button>
-                <button
-                  type="button"
-                  title="Delete Learner"
-                  onClick={() => handleDelete(editLearner)}
-                  disabled={saving}
-                  style={{padding: '0.75rem 1.5rem', border: 'none', borderRadius: '6px', backgroundColor: '#ef4444', color: 'white', fontSize: '0.875rem', fontWeight: '500', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1}}
-                >Delete</button>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem'}}>
+                {/* Left side: Delete */}
+                <div>
+                  <button
+                    type="button"
+                    title="Delete Learner"
+                    onClick={() => handleDelete(editLearner)}
+                    disabled={saving}
+                    style={{padding: '0.75rem 1.5rem', border: 'none', borderRadius: '6px', backgroundColor: '#ef4444', color: 'white', fontSize: '0.875rem', fontWeight: '500', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1}}
+                  >Delete</button>
+                </div>
+                {/* Right side: Cancel + Save */}
+                <div style={{display: 'flex', gap: '0.75rem'}}>
+                  <button
+                    type="button"
+                    onClick={() => { setShowEdit(false); setEditLearner(null); }}
+                    disabled={saving}
+                    style={{padding: '0.75rem 1.5rem', border: '1px solid #d1d5db', borderRadius: '6px', backgroundColor: 'white', color: '#374151', fontSize: '0.875rem', fontWeight: '500', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1}}
+                  >Cancel</button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    style={{padding: '0.75rem 1.5rem', border: 'none', borderRadius: '6px', backgroundColor: '#3b82f6', color: 'white', fontSize: '0.875rem', fontWeight: '500', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1}}
+                  >{saving ? 'Saving...' : 'Save Changes'}</button>
+                </div>
               </div>
             </form>
           </div>
