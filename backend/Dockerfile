@@ -1,10 +1,17 @@
 # Backend Dockerfile
 FROM python:3.11-slim
 WORKDIR /app
-COPY . /app
-RUN pip install --no-cache-dir -r requirements.txt
-RUN chmod +x /app/entrypoint.sh
-EXPOSE 6001
-# HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 CMD curl --fail http://localhost:6001/api/records || exit 1
 
-CMD ["/app/entrypoint.sh"]
+# Install dependencies first for better caching
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the code
+COPY . .
+
+ENV FLASK_ENV=production
+# DATABASE_URL will be set in Render dashboard
+
+EXPOSE 6001
+
+CMD ["gunicorn", "-b", "0.0.0.0:6001", "app_pg:app"]

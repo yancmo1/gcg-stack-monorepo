@@ -1,12 +1,12 @@
 # Frontend Dockerfile
-FROM node:20
+FROM node:20-slim
 WORKDIR /app
 
-# Install only dependencies based on lock file to ensure deterministic installs
+# Install dependencies
 COPY package*.json ./
-RUN npm ci --no-audit --no-fund
+RUN npm install
 
-# Copy the rest of the app source
+# Copy the rest of the code
 COPY . .
 
 # Build the app
@@ -14,4 +14,4 @@ RUN npm run build
 
 # Expose and run preview server
 EXPOSE 6002
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "6002"]
+CMD ["npm", "run", "preview", "--", "--host", "--port", "6002"]
