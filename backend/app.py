@@ -244,11 +244,19 @@ def seed_from_csv():
 
 
 init_db()
-# Guard seeding so the app always starts
+# Guard seeding so the app always starts (could be gated by env flag later)
 try:
     seed_from_csv()
 except Exception as e:
     print(f"Seed error: {e}")
+
+# --- Assessments blueprint (prototype) ---
+try:
+    from assessments import assessments_bp, init_assessment_tables
+    init_assessment_tables()
+    app.register_blueprint(assessments_bp)
+except Exception as _e:
+    print(f"Assessments module load failed: {_e}")
 
 # Helper function to get DB connection
 def get_db():

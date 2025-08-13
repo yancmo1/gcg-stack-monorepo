@@ -1,13 +1,81 @@
 # app_pg.py
 from flask import Flask, request, jsonify, Blueprint
 from flask_cors import CORS
-from db import SessionLocal
+from db import SessionLocal, engine
+from sqlalchemy import text
 from models_pg import Learner
-import os
+import csv
 from datetime import datetime
+DATA_DIR = os.getenv('DATA_DIR', '/data')
+SEED_ON_START = os.getenv('SEED_ON_START', 'true').lower() in ('1','true','yes')
+import os
 
 app = Flask(__name__)
 CORS(app)
+
+# Ensure tables exist
+from db import Base
+Base.metadata.create_all(bind=engine)
+
+def _parse_date(val: str):
+    if not val:
+        return None
+    for fmt in ('%Y-%m-%d','%m/%d/%Y','%m/%d/%y'):
+        try:
+            return datetime.strptime(val.strip(), fmt).date()
+        except Exception:
+            continue
+    return None
+
+def seed_from_csv():
+    """Idempotent CSV import. Only inserts learners that do not already exist (matched by employee_name)."""
+    tracker_path = os.path.join(DATA_DIR, 'Training LMS Tracker(Tracker) (1).csv')
+    if not os.path.isfile(tracker_path):
+        return 0
+    inserted = 0
+    db = SessionLocal()
+    try:
+        existing_names = {n for (n,) in db.query(Learner.employee_name).all()}
+        with open(tracker_path, newline='') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                name = (row.get('Employee Name') or row.get('employee_name') or '').strip()
+                if not name or name in existing_names:
+                    continue
+                learner = Learner(
+                    employee_name=name,
+                    title=(row.get('Title') or row.get('title') or '').strip(),
+                    region=(row.get('Region') or row.get('region') or '').strip(),
+                    start_date=_parse_date(row.get('Start Date') or row.get('start_date') or ''),
+                    completion_date=_parse_date(row.get('Completion Date') or row.get('completion_date') or ''),
+                    status=(row.get('Status') or row.get('status') or 'In Progress').strip() or 'In Progress',
+                    sort_order=None,
+                    notes=(row.get('Notes') or row.get('notes') or '').strip(),
+                    trainer=(row.get('Trainer') or row.get('trainer') or '').strip(),
+                    mtl_completed=(row.get('MTL Completed') or row.get('MTL') or row.get('mtl_completed') or '').strip(),
+                    new_hire_test_score=(lambda v: (float(v) if v and v.strip() else None))(row.get('New Hire Test Score')),
+                    group='Learner'
+                )
+                db.add(learner)
+                inserted += 1
+        if inserted:
+            db.commit()
+        else:
+            db.rollback()
+        return inserted
+    except Exception:
+        db.rollback()
+        return 0
+    finally:
+        db.close()
+
+# Seed if enabled and table empty
+if SEED_ON_START:
+    with SessionLocal() as _s:
+        count = _s.query(Learner).count()
+    if count == 0:
+        inserted = seed_from_csv()
+        app.logger.info(f"Seeded learners: {inserted}")
 
 # Config
 PORT = int(os.getenv('PORT', '6001'))

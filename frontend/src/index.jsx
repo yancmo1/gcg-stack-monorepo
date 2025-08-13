@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './App.css';
+import { ThemeProvider } from './context/ThemeContext';
 
 export const apiBase = window.__API_BASE__ || 'http://localhost:6001/api'
 
@@ -42,6 +43,8 @@ export async function apiDelete(path) {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
   </React.StrictMode>
 );

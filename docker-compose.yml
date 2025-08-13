@@ -1,14 +1,14 @@
 services:
-  postgres:
+  lms-postgres:
     image: postgres:15
     environment:
-      - POSTGRES_DB=training_lms
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=lms_db
+      - POSTGRES_USER=lms_user
+      - POSTGRES_PASSWORD=lms_pass_2025
     ports:
-      - "5432:5432"
+      - "5433:5432" # Dedicated port for LMS
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - lms_pg_data:/var/lib/postgresql/data
 
   backend:
     build: ./backend
@@ -17,12 +17,15 @@ services:
     environment:
       - FLASK_ENV=development
       - PORT=6001
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/training_lms
+      - DATABASE_URL=postgresql://lms_user:lms_pass_2025@lms-postgres:5432/lms_db
+      - SEED_ON_START=true
+      - DATA_DIR=/data
     volumes:
       - ./backend:/app
       - ./Original Docs data and example:/data
     depends_on:
-      - postgres
+      - lms-postgres
+    command: python app_pg.py
 
   frontend:
     build: ./frontend
@@ -47,4 +50,4 @@ services:
       - frontend
 
 volumes:
-  postgres_data:
+  lms_pg_data:
