@@ -1,16 +1,22 @@
 import React from 'react';
-import { Sun, Moon, User, BarChart2, ClipboardList, Settings, PlusCircle } from 'lucide-react';
+import { Sun, Moon, User, BarChart2, ClipboardList, Settings, PlusCircle, LogOut } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import { NavLink } from 'react-router-dom';
 
 export default function TopNav({ onAddRecord, searchTerm, setSearchTerm }) {
   const { dark, setDark } = useTheme();
+  const { user, logout } = useAuth();
+  
   const tabs = [
     { label: 'Dashboard', to: '/dashboard' },
     { label: 'Records', to: '/records' },
     { label: 'Analytics', to: '/analytics' },
     { label: 'Checklist', to: '/checklist' },
-    { label: 'Settings', to: '/settings' }
+    ...(user?.role === 'Admin' ? [
+      { label: 'Admin', to: '/admin' },
+      { label: 'Settings', to: '/settings' }
+    ] : [])
   ];
   return (
     <nav style={{
@@ -19,7 +25,7 @@ export default function TopNav({ onAddRecord, searchTerm, setSearchTerm }) {
       position: 'sticky', top: 0, zIndex: 100
     }}>
       <div style={{maxWidth:1440, margin:'0 auto', padding:'0.6rem 2rem', display:'flex', alignItems:'center', gap:24, flexWrap:'wrap'}}>
-        <span style={{ fontWeight: 700, fontSize: 20, color: 'var(--color-primary)' }}>Training LMS Tracker</span>
+        <span style={{ fontWeight: 700, fontSize: 20, color: 'var(--color-primary)' }}>GCG Field Services Training LMS Tracker</span>
         <div style={{ display: 'flex', gap: 4 }}>
           {tabs.map(tab => (
             <NavLink key={tab.to} to={tab.to} end={tab.to==='/' } style={({isActive})=>({
@@ -43,10 +49,47 @@ export default function TopNav({ onAddRecord, searchTerm, setSearchTerm }) {
             onChange={e=>setSearchTerm(e.target.value)}
             placeholder="Search records..."
             style={{padding:'8px 10px', border:'2px solid #00699b', borderRadius:8, fontSize:14, minWidth:240, background:'#fff', color:'#111'}}
+            autoComplete="off"
+            data-lpignore="true"
           />
-          <button className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: 6, padding:'8px 16px', background:'#0069ff', color:'#fff', fontWeight:600, border:'2px solid #004caa', borderRadius:8 }} onClick={onAddRecord}><PlusCircle size={16}/> Add Record</button>
-          <button className="btn btn-ghost btn-sm" aria-label="Toggle dark mode" onClick={() => setDark(d => !d)} style={{border:'2px solid #00699b', borderRadius:8, padding:'6px 10px', background:'#fff', color:'#00699b'}}>
+          <button 
+            className="btn btn-primary btn-sm" 
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding:'8px 16px', background:'#0069ff', color:'#fff', fontWeight:600, border:'2px solid #004caa', borderRadius:8 }} 
+            onClick={onAddRecord}
+          >
+            <PlusCircle size={16}/> Add Record
+          </button>
+          <button 
+            className="btn btn-ghost btn-sm" 
+            aria-label="Toggle dark mode" 
+            onClick={() => setDark(d => !d)} 
+            style={{border:'2px solid #00699b', borderRadius:8, padding:'6px 10px', background:'#fff', color:'#00699b'}}
+          >
             {dark ? <Sun size={16}/> : <Moon size={16}/>} 
+          </button>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 8, 
+            padding: '6px 12px', 
+            border: '2px solid #00699b', 
+            borderRadius: 8, 
+            background: '#fff', 
+            color: '#00699b',
+            fontSize: 14,
+            fontWeight: 500
+          }}>
+            <User size={16} />
+            <span>{user?.username || 'User'}</span>
+            <span style={{ color: '#666', fontSize: 12 }}>({user?.role || 'Unknown'})</span>
+          </div>
+          <button 
+            className="btn btn-ghost btn-sm" 
+            aria-label="Logout" 
+            onClick={logout}
+            style={{border:'2px solid #dc2626', borderRadius:8, padding:'6px 10px', background:'#fff', color:'#dc2626'}}
+          >
+            <LogOut size={16}/> 
           </button>
         </div>
       </div>

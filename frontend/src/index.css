@@ -1,16 +1,51 @@
-/* Base resets & typography only; layout handled elsewhere. */
-html { -webkit-text-size-adjust: 100%; }
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  line-height: 1.5;
-  min-width: 320px;
-  -webkit-font-smoothing: antialiased;
-  background: transparent; /* App.css sets gradient */
+/* New GCG Brand Theme - Modern Professional Design */
+:root {
+  --brand: #084c8e;
+  --brand-600: #0a5fb8;
+  --brand-700: #063b6f;
+  --ink: #0f1720;
+  --muted: #5b6b7e;
+  --bg: #f3f6fb;
+  --panel: #fff;
+  --ring: #dbe7ff;
+  --radius: 18px;
+  --shadow: 0 10px 28px rgba(8, 76, 142, 0.10);
+  --header-h: 86px;
 }
 
-*, *::before, *::after { box-sizing: border-box; }
+/* Base resets & typography */
+html { 
+  -webkit-text-size-adjust: 100%; 
+  height: 100%;
+}
 
-a { text-decoration: none; color: inherit; }
-img, svg, video { display: block; max-width: 100%; }
-button { font-family: inherit; }
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+*, *::before, *::after { 
+  box-sizing: border-box; 
+}
+
+a { 
+  text-decoration: none; 
+  color: inherit; 
+}
+
+img, svg, video { 
+  display: block; 
+  max-width: 100%; 
+}
+
+button { 
+  font-family: inherit; 
+}
+
+#root {
+  height: 100%;
+}

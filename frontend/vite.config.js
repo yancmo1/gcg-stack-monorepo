@@ -10,5 +10,9 @@ export default defineConfig({
     proxy: {
       '/api': 'http://backend:6001'
     }
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 6002
   }
 })

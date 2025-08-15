@@ -34,6 +34,10 @@ export default function VirtualRecordTable({ records, fields, onRowClick }) {
     );
   };
 
+  if (!records || records.length === 0) {
+    return <div style={{ padding: 32, textAlign: 'center', color: '#888' }}>No records found.</div>;
+  }
+
   return (
     <div style={{ border: '1px solid #e5e7eb', borderRadius: 12, background: '#fff', overflow: 'auto', maxHeight: '60vh' }}>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '6px 10px', borderBottom: '1px solid #e5e7eb', background: '#f9fafb' }}>
@@ -45,18 +49,35 @@ export default function VirtualRecordTable({ records, fields, onRowClick }) {
         ))}
       </div>
       <div style={{ width: '100%', height: 400, position: 'relative', overflow: 'auto', background: '#fff' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: fields.reduce((s,f)=>s + (parseInt(f.width)||160),0), background: '#fff', color: '#111' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', color: '#111', tableLayout: 'fixed' }}>
+          <colgroup>
+            {visibleFields.map(f =>
+              f.name === 'notes'
+                ? <col key={f.name} style={{ width: 'auto' }} />
+                : <col key={f.name} style={{ width: f.width || 140, maxWidth: f.width || 140 }} />
+            )}
+          </colgroup>
           <thead style={{ position: 'sticky', top: 0, background: '#f9fafb', zIndex: 2 }}>
-            <tr style={{ display: 'flex', width: '100%', position: 'sticky', top: 0, zIndex: 2, background: '#f9fafb', fontWeight: 700, fontSize: 14, color: '#111' }}>
+            <tr style={{ fontWeight: 700, fontSize: 14, color: '#111' }}>
               {visibleFields.map(headerCell)}
             </tr>
           </thead>
           <tbody>
             {records.map((r,i) => (
               <tr key={i} onClick={()=>onRowClick && onRowClick(r)} style={{ cursor:'pointer', background: i%2===0? '#fff':'#fdfdfd' }}>
-                {visibleFields.map(f => (
-                  <td key={f.name} style={{ padding:'8px 12px', fontSize:13, borderBottom:'1px solid #f1f5f9', width:f.width, maxWidth:f.width, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }} title={r[f.name] || ''}>{r[f.name] || ''}</td>
-                ))}
+                {visibleFields.map(f => {
+                  let value = r[f.name];
+                  // For select fields, show value even if not in options, and fallback for missing
+                  if (f.type === 'select') {
+                    if (!value) value = <span style={{ color: '#aaa' }}>—</span>;
+                    else if (!f.options.includes(value)) value = <span style={{ color: '#eab308' }}>{r[f.name]} <em>(unknown)</em></span>;
+                  } else if (!value) {
+                    value = <span style={{ color: '#aaa' }}>—</span>;
+                  }
+                  return (
+                    <td key={f.name} style={{ padding:'8px 12px', fontSize:13, borderBottom:'1px solid #f1f5f9', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', ...(f.name === 'notes' ? { width: 'auto' } : { width: f.width, maxWidth: f.width }) }} title={r[f.name] || ''}>{value}</td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>

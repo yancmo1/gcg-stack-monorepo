@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GCG LMS — Dashboard</title>
+<style>
+  :root{
+    --brand:#084c8e;
+    --brand-600:#0a5fb8;
+    --brand-700:#063b6f;
+    --ink:#0f1720;
+    --muted:#5b6b7e;
+    --bg:#f3f6fb;
+    --panel:#fff;
+    --ring:#dbe7ff;
+    --radius:18px;
+    --shadow:0 10px 28px rgba(8,76,142,.10);
+    --header-h:86px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+
+  /* =================== Header =================== */
+  .header{
+    position:fixed;inset:0 0 auto 0;height:var(--header-h);z-index:10;
+    background:linear-gradient(120deg,var(--brand),var(--brand-600));
+    color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.08);
+  }
+  .header-inner{
+    max-width:1400px;margin:0 auto;height:100%;padding:0 18px;
+    display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center
+  }
+  .brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .brand img{height:56px;width:auto;display:block}
+  .brand-name{font-weight:900;letter-spacing:.25px;white-space:nowrap}
+  .page-meta{justify-self:end;text-align:right}
+  .page-title{font-size:30px;font-weight:900;line-height:1}
+  .page-sub{opacity:.9;font-size:13px;margin-top:4px}
+
+  /* =================== Layout under header =================== */
+  .layout{
+    margin-top:var(--header-h);
+    display:grid;grid-template-columns:max-content 1fr;gap:16px;
+    padding:16px;min-height:calc(100vh - var(--header-h));
+  }
+
+  /* =================== Slim Sidebar =================== */
+  .sidebar{
+    width:86px;transition:width .18s ease;
+    background:linear-gradient(180deg,var(--brand),var(--brand-700));
+    color:#fff;border-radius:22px;box-shadow:var(--shadow);
+    position:sticky;top:16px;align-self:start;overflow:auto;
+    min-height:calc(100vh - var(--header-h) - 32px);
+  }
+  .sidebar:hover{width:260px}
+
+  .rail{padding:10px;display:grid;gap:8px}
+  .rail a{
+    display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;
+    text-decoration:none;color:#ffffffdd;font-weight:800;white-space:nowrap
+  }
+  .rail a .ico{width:28px;display:grid;place-items:center;font-size:20px}
+  .rail a .label{opacity:0;transition:opacity .18s ease}
+  .sidebar:hover .rail a .label{opacity:1}
+  .rail a.active,.rail a:hover{background:#ffffff22;color:#fff}
+
+  /* =================== Content =================== */
+  .content{min-width:0;max-width:1400px;margin:0 auto}
+
+  /* KPI cards */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+  @media (max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:620px){.kpis{grid-template-columns:1fr}}
+
+  .kpi{
+    background:var(--panel);border-radius:20px;padding:16px 18px;
+    box-shadow:var(--shadow);border:1px solid #eef3ff
+  }
+  .kpi h4{margin:0 0 8px;font-size:12px;letter-spacing:.35px;color:var(--muted)}
+  .kpi .val{font-size:28px;font-weight:900}
+
+  /* Card + grid */
+  .grid-main{display:grid;grid-template-columns:1.4fr .9fr;gap:16px}
+  @media (max-width:1100px){.grid-main{grid-template-columns:1fr}}
+  .card{
+    background:var(--panel);border-radius:20px;padding:16px;
+    box-shadow:var(--shadow);border:1px solid #eef3ff
+  }
+  .card h3{margin:0 0 10px;font-size:14px;letter-spacing:.35px;color:var(--muted)}
+
+  /* Table */
+  table{width:100%;border-collapse:separate;border-spacing:0 10px}
+  thead th{font-size:12px;color:var(--muted);text-align:left;padding:0 12px 6px}
+  tbody tr{background:#f4f8ff;border-radius:12px}
+  tbody td{padding:12px}
+  tbody tr td:first-child{border-top-left-radius:12px;border-bottom-left-radius:12px}
+  tbody tr td:last-child{border-top-right-radius:12px;border-bottom-right-radius:12px}
+
+  /* Status pills */
+  .status{font-size:12px;font-weight:800;border-radius:999px;padding:6px 10px;display:inline-block}
+  .inprog{background:#e6f1ff;color:var(--brand)}
+  .done{background:#e9fbf3;color:#0f7b52}
+  .blocked{background:#fff3e2;color:#b45309}
+
+  /* Tabs */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .tabs button{
+    border:1px solid var(--ring);background:#fff;color:var(--ink);
+    padding:8px 12px;border-radius:999px;cursor:pointer;font-weight:800
+  }
+  .tabs button.active{background:var(--brand);border-color:var(--brand);color:#fff}
+
+  /* Chart placeholder */
+  .chart{
+    height:260px;border:1px dashed var(--ring);border-radius:14px;
+    display:flex;align-items:center;justify-content:center;color:#6d7c93;
+    background:repeating-linear-gradient(0deg,#f9fbff,#f9fbff 10px,#f2f6ff 10px,#f2f6ff 20px)
+  }
+
+  /* Secondary row */
+  .grid-second{display:grid;grid-template-columns:1.4fr .9fr;gap:16px;margin-top:16px}
+  @media (max-width:1100px){.grid-second{grid-template-columns:1fr}}
+
+  /* Quick actions */
+  .actions{display:grid;gap:12px}
+  .btn{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    padding:14px;border-radius:14px;border:0;cursor:pointer;
+    font-weight:900;color:#fff;background:var(--brand);box-shadow:var(--shadow)
+  }
+  .btn.secondary{background:#0a5fb8}
+  .btn.alt{background:#2a77c6}
+
+  /* Responsive tweaks */
+  @media (max-width:900px){
+    .header-inner{grid-template-columns:1fr;gap:6px}
+    .page-meta{justify-self:start;text-align:left}
+    .layout{grid-template-columns:1fr}
+    .sidebar{position:fixed;left:16px;top:calc(var(--header-h) + 16px);bottom:16px;z-index:9}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<header class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <img src="gcg-logo.png" alt="GCG logo">
+      <div class="brand-name"><h2>Field Services<br>
+      Training LMS</h></div>
+    </div>
+    <div class="page-meta">
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub">Quick overview of training, completion and activity.</div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== Main ===== -->
+<div class="layout">
+  <!-- Sidebar (icon-only, expands on hover to show labels) -->
+  <aside class="sidebar">
+    <nav class="rail">
+      <a class="active" href="#"><span class="ico">🏠</span><span class="label">Dashboard</span></a>
+      <a href="#"><span class="ico">🗂</span><span class="label">Records</span></a>
+      <a href="#"><span class="ico">📊</span><span class="label">Analytics</span></a>
+      <a href="#"><span class="ico">✅</span><span class="label">Checklist</span></a>
+      <a href="#"><span class="ico">⚙️</span><span class="label">Settings</span></a>
+    </nav>
+  </aside>
+
+  <!-- Content -->
+  <main class="content">
+    <!-- KPIs -->
+    <section class="kpis">
+      <div class="kpi"><h4>TOTAL LEARNERS</h4><div class="val">124</div></div>
+      <div class="kpi"><h4>ACTIVE COURSES</h4><div class="val">18</div></div>
+      <div class="kpi"><h4>COMPLETION RATE</h4><div class="val">82%</div></div>
+      <div class="kpi"><h4>AVG TIME TO COMPLETE</h4><div class="val">3.4d</div></div>
+    </section>
+
+    <!-- Row 1 -->
+    <section class="grid-main">
+      <div class="card">
+        <h3>Recent Records</h3>
+        <table>
+          <thead><tr><th>Employee</th><th>Title</th><th>Region</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Christopher Johnson</td><td>Game Tech</td><td>Durant</td><td><span class="status inprog">In Progress</span></td></tr>
+            <tr><td>Betty Billy</td><td>—</td><td>Southern</td><td><span class="status inprog">In Progress</span></td></tr>
+            <tr><td>Cody Hiltgen</td><td>—</td><td>Central</td><td><span class="status done">Completed</span></td></tr>
+            <tr><td>Camron Shives</td><td>—</td><td>Northern</td><td><span class="status blocked">Blocked</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Analytics</h3>
+        <div class="tabs">
+          <button class="active">By Region</button>
+          <button>Per Month</button>
+          <button>Course Popularity</button>
+        </div>
+        <div class="chart">Donut placeholder</div>
+      </div>
+    </section>
+
+    <!-- Row 2 -->
+    <section class="grid-second">
+      <div class="card">
+        <h3>Announcements</h3>
+        <div class="chart">Team notes / updates</div>
+      </div>
+      <div class="card">
+        <h3>Quick Actions</h3>
+        <div class="actions">
+          <button class="btn">➕ Add Record</button>
+          <button class="btn secondary">⟳ Sync SharePoint</button>
+          <button class="btn alt">⬇ Export CSV</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+</body>
+</html>

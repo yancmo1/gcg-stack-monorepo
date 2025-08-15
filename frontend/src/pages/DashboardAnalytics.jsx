@@ -67,7 +67,7 @@ export default function DashboardAnalytics() {
   const regionData = regionLabels.map(r => regionCounts[r]);
 
   return (
-    <div style={{padding:'2rem', maxWidth: 1200, margin:'auto'}}>
+    <div style={{maxWidth: 1200, margin:'auto'}}>
       <h2 style={{fontSize:'2rem', fontWeight:700, marginBottom:'2rem'}}>Analytics Dashboard</h2>
       {loading && <div>Loading…</div>}
       {error && <div style={{color:'red'}}>{error}</div>}

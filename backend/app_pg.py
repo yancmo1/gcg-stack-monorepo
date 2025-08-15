@@ -1,4 +1,5 @@
 # app_pg.py
+import os
 from flask import Flask, request, jsonify, Blueprint
 from flask_cors import CORS
 from db import SessionLocal, engine
@@ -8,7 +9,6 @@ import csv
 from datetime import datetime
 DATA_DIR = os.getenv('DATA_DIR', '/data')
 SEED_ON_START = os.getenv('SEED_ON_START', 'true').lower() in ('1','true','yes')
-import os
 
 app = Flask(__name__)
 CORS(app)

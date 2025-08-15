@@ -35,6 +35,10 @@ export default function AddRecordModal({ open, onClose, onSubmit, fields, loadin
                   <input type="date" name={f.name} value={form[f.name]} onChange={handleChange} style={inputStyle} />
                 ) : f.type === 'select' ? (
                   <select name={f.name} value={form[f.name]} onChange={handleChange} style={inputStyle}>
+                    {/* Always show current value as an option if not in options */}
+                    {form[f.name] && !f.options.includes(form[f.name]) && (
+                      <option value={form[f.name]}>{form[f.name]} (unknown)</option>
+                    )}
                     <option value="">Select</option>
                     {f.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>

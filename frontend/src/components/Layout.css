@@ -1,0 +1,181 @@
+/* Sidebar hover effects */
+.sidebar {
+  width: 86px;
+  transition: width 0.18s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar:hover {
+  width: 260px !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar .nav-label {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.18s ease, visibility 0.18s ease;
+}
+
+.sidebar:hover .nav-label {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Icon alignment rules with higher specificity */
+.sidebar .nav-link span:first-child,
+.sidebar .sidebar-user span:first-child {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  margin: 0 !important;
+  width: 28px !important;
+  min-width: 28px !important;
+  height: 28px !important;
+}
+
+/* When collapsed, center only the icon containers */
+.sidebar:not(:hover) .nav-link span:first-child,
+.sidebar:not(:hover) .sidebar-user span:first-child {
+  justify-content: center !important;
+}
+
+/* Ensure navigation links maintain consistent height */
+.sidebar .nav-link,
+.sidebar .sidebar-user,
+.sidebar button {
+  min-height: 52px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.22) !important;
+  color: #fff !important;
+}
+
+/* Core Layout Structure */
+.app {
+  height: 100vh;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-layout {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0;
+  overflow: hidden;
+}
+
+.main-content {
+  min-width: 0;
+  max-width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  height: 100%;
+}
+
+/* Page Content Container */
+.page-container {
+  padding: 24px;
+  min-height: 100%;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Dashboard specific grid */
+.dashboard-grid {
+  display: grid;
+  gap: 24px;
+  min-height: calc(100vh - var(--header-h) - 48px);
+}
+
+/* Responsive layout */
+@media (max-width: 900px) {
+  .app-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: var(--header-h);
+    bottom: 0;
+    z-index: 9;
+    border-radius: 0 !important;
+    border-top: none !important;
+    width: 86px !important;
+  }
+  
+  .sidebar:hover {
+    width: 200px !important;
+  }
+  
+  .main-content {
+    margin-left: 86px;
+  }
+  
+  .page-container {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar:hover {
+    transform: translateX(0);
+  }
+  
+  .page-container {
+    padding: 12px;
+  }
+}
+
+/* Additional responsive improvements */
+@media (max-width: 768px) {
+  :root {
+    --header-h: 60px;
+  }
+  
+  .app-layout {
+    top: 60px;
+  }
+  
+  .sidebar {
+    top: 60px;
+  }
+}
+
+/* Dashboard responsive styles */
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 350px !important;
+  }
+}

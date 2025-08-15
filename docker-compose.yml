@@ -15,13 +15,12 @@ services:
     ports:
       - "6001:6001"
     environment:
-      - FLASK_ENV=development
+      - FLASK_ENV=production
       - PORT=6001
       - DATABASE_URL=postgresql://lms_user:lms_pass_2025@lms-postgres:5432/lms_db
       - SEED_ON_START=true
       - DATA_DIR=/data
     volumes:
-      - ./backend:/app
       - ./Original Docs data and example:/data
     depends_on:
       - lms-postgres
@@ -33,21 +32,8 @@ services:
       - "6002:6002"
     environment:
       - REACT_APP_API_BASE=http://localhost:6001/api
-  # volumes:
-  #   - ./frontend:/app
-  #   - /app/node_modules
     depends_on:
       - backend
-    stdin_open: true
-    tty: true
-
-  nginx:
-    build: ./nginx
-    ports:
-      - "6002:6002"
-    depends_on:
-      - backend
-      - frontend
 
 volumes:
   lms_pg_data:

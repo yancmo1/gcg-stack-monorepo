@@ -295,11 +295,12 @@ export default function LearnersPage() {
                       onChange={e => setEditLearner({...editLearner, region: e.target.value})}
                       style={{width: '100%', padding: '0.75rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.875rem', background: 'rgba(0,0,0,0.10)'}}
                     >
-                      <option value="">Select Region</option>
-                      <option value="Northern">Northern</option>
-                      <option value="Central">Central</option>
-                      <option value="Southern">Southern</option>
-                      <option value="North Carolina">North Carolina</option>
+                          <option value="">Select Region</option>
+                          <option value="Tulsa">Tulsa</option>
+                          <option value="Central">Central</option>
+                          <option value="Southern">Southern</option>
+                          <option value="Durant">Durant</option>
+                          <option value="North Carolina">North Carolina</option>
                     </select>
                   </div>
                 </div>

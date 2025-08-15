@@ -6,9 +6,11 @@ services:
     environment:
       - FLASK_ENV=development
       - FLASK_APP=app
+      - DATABASE_PATH=/data/sqlite/database.db
     volumes:
       - ./backend:/app
       - ./Original Docs data and example:/data
+      - lms_sqlite_data:/data/sqlite
     command: flask run --host=0.0.0.0 --port=6001
     ports:
       - "6001:6001"
@@ -25,6 +27,8 @@ services:
     tty: true
     ports:
       - "6002:6002"
+    depends_on:
+      - backend
 
   postgres:
     image: postgres:15
@@ -39,3 +43,4 @@ services:
 
 volumes:
   postgres_data:
+  lms_sqlite_data:
